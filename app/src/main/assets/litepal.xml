@@ -1,0 +1,9 @@
+<litepal>
+    <dbname value="winddragon"/>
+    <version value="1"/>
+    <list>
+        <mapping class="com.example.winddragon.db.City"/>
+        <mapping class="com.example.winddragon.db.County"/>
+        <mapping class="com.example.winddragon.db.Province"/>
+    </list>
+</litepal>
