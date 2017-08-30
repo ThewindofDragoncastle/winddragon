@@ -7,16 +7,25 @@ import org.litepal.crud.DataSupport;
  */
 
 public class County extends DataSupport {
-    private int CurrentId;
+    private int id;
     private int CountyCode;
     private String CountyName;
+    private int CityId;
 
-    public int getCurrentId() {
-        return CurrentId;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public void setCurrentId(int currentId) {
-        this.CurrentId = currentId;
+    public int getId() {
+        return id;
+    }
+
+    public int getCityId() {
+        return CityId;
+    }
+
+    public void setCityId(int cityId) {
+        this.CityId = cityId;
     }
 
     public int getCountyCode() {

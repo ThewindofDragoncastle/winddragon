@@ -3,6 +3,8 @@ package com.example.winddragon;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.example.winddragon.db.City;
+
 public class MainPage extends AppCompatActivity {
 
     @Override

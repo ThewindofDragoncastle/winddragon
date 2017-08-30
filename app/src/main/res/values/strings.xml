@@ -1,4 +1,3 @@
 <resources>
-    <string name="app_name">winddragon</string>
-    <string name="windDragon">风龙天气</string>
+    <string name="app_name">风龙天气</string>
 </resources>
