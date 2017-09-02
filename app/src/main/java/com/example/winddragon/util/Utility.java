@@ -6,6 +6,8 @@ import com.example.winddragon.MyLog;
 import com.example.winddragon.db.City;
 import com.example.winddragon.db.County;
 import com.example.winddragon.db.Province;
+import com.example.winddragon.gson.Weather;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -71,7 +73,7 @@ public class Utility {
                     JSONObject object = array.getJSONObject(i);
                     County county=new County();
                     county.setCountyName(object.getString("name"));
-                    county.setCountyCode(object.getInt("id"));
+                    county.setCountyCode(object.getString("weather_id"));
                     county.setCityId(cityid);
                     county.save();
                     MyLog.i("Utility:","County name:"+county.getCountyName()+"  County code"+county.getCountyCode());
@@ -83,5 +85,17 @@ public class Utility {
             }
         }
         return false;
+    }
+    public  static Weather handleweatherResponse(String response)
+    {
+        try {
+            JSONObject jsonObject=new JSONObject(response);
+            JSONArray array=jsonObject.getJSONArray("HeWeather");
+            String content=array.getJSONObject(0).toString();
+            return new Gson().fromJson(content,Weather.class);
+        } catch (JSONException e) {
+            MyLog.d("Utility:","解析出错");
+        }
+        return null;
     }
 }

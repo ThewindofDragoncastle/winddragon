@@ -1,6 +1,7 @@
 package com.example.winddragon.util;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -20,6 +21,7 @@ import com.example.winddragon.R;
 import com.example.winddragon.db.City;
 import com.example.winddragon.db.County;
 import com.example.winddragon.db.Province;
+import com.example.winddragon.weather_Activity;
 
 import org.litepal.crud.DataSupport;
 
@@ -85,6 +87,15 @@ public class AreaFragment extends Fragment {
              {
                  currentCity=cityList.get(position);
                  queryCounties();
+             }
+             else if(currentLevel==LEVEL_COUNTY)
+             {
+                 String weatherId=countyList.get(position).getCountyCode();
+                 Intent intent=new Intent(getActivity(),weather_Activity.class);
+                 intent.putExtra("weather_id",weatherId);
+                 MyLog.i("weather_activity:",weatherId);
+                 startActivity(intent);
+                 getActivity().finish();
              }
 
          }
