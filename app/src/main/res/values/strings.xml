@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">风龙天气</string>
+    <string name="forecast">预报</string>
+    <string name="qualityofair">空气质量</string>
+    <string name="indexofaqi">API指数</string>
+    <string name="indexofpm">pm2.5指数</string>
 </resources>
