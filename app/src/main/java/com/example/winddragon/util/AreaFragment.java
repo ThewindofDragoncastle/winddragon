@@ -16,6 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.winddragon.MainPage;
 import com.example.winddragon.MyLog;
 import com.example.winddragon.R;
 import com.example.winddragon.db.City;
@@ -90,12 +91,21 @@ public class AreaFragment extends Fragment {
              }
              else if(currentLevel==LEVEL_COUNTY)
              {
-                 String weatherId=countyList.get(position).getCountyCode();
-                 Intent intent=new Intent(getActivity(),weather_Activity.class);
-                 intent.putExtra("weather_id",weatherId);
-                 MyLog.i("weather_activity:",weatherId);
-                 startActivity(intent);
-                 getActivity().finish();
+                 String weatherId = countyList.get(position).getCountyCode();
+                 if(getActivity() instanceof MainPage) {
+                     Intent intent = new Intent(getActivity(), weather_Activity.class);
+                     intent.putExtra("weather_id", weatherId);
+                     MyLog.i("weather_activity:", weatherId);
+                     startActivity(intent);
+                     getActivity().finish();
+                 }
+                 else if(getActivity() instanceof weather_Activity)
+                 {
+                   weather_Activity activity=(weather_Activity)getActivity();
+                     activity.drawerLayout.closeDrawers();
+                     activity.swipeRefreshLayout.setRefreshing(true);
+                     activity.requestweather(weatherId);
+                 }
              }
 
          }

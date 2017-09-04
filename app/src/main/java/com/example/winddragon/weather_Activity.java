@@ -1,15 +1,24 @@
 package com.example.winddragon;
 
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -19,6 +28,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.winddragon.gson.Forecast;
 import com.example.winddragon.gson.Weather;
+import com.example.winddragon.service.autouodateService;
 import com.example.winddragon.util.HttpUtil;
 import com.example.winddragon.util.Utility;
 
@@ -54,9 +64,12 @@ private ScrollView weatherlayout;
 
    private LinearLayout forecastLayout;
 
-    private SwipeRefreshLayout swipeRefreshLayout;
+    public SwipeRefreshLayout swipeRefreshLayout;
+    //在滑动出的城市选择时需要使用这个
 
     private String weatherId;
+
+    public DrawerLayout drawerLayout;//在滑动出的城市选择时需要使用这个
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,6 +96,44 @@ private ScrollView weatherlayout;
         picbackground=(ImageView)findViewById(R.id.bing_img);
         swipeRefreshLayout=(SwipeRefreshLayout)findViewById(R.id.swiperefresh);
         swipeRefreshLayout.setColorSchemeResources(R.color.mygreen);
+
+        drawerLayout=(DrawerLayout)findViewById(R.id.draw_layout);
+        Button button=(Button)findViewById(R.id.home1);//导航键
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!drawerLayout.isDrawerOpen(GravityCompat.START))
+                {
+                    drawerLayout.openDrawer(GravityCompat.START);
+                }
+            }
+        });
+
+        final AlertDialog.Builder alertDialog=new AlertDialog.Builder(weather_Activity.this);
+        FloatingActionButton floatingActionButton=(FloatingActionButton)findViewById(R.id.floatbutton);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog.setTitle("切换城市");
+                alertDialog.setMessage("你确定要切换城市？");
+                alertDialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if(!drawerLayout.isDrawerOpen(GravityCompat.START))
+                        {
+                            drawerLayout.openDrawer(GravityCompat.START);
+                        }
+                    }
+                });
+                alertDialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+                alertDialog.show();
+            }
+        });
 
         SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(this);
         String localdata=sharedPreferences.getString("weather",null);
@@ -114,7 +165,7 @@ private ScrollView weatherlayout;
             }
         });
     }
-    private void requestweather(String weatherId)
+    public void requestweather(String weatherId)
     {
         String weatherUrl="http://guolin.tech/api/weather?cityid="+weatherId+"&key=aff3c588e85e4ce5aae8d331617756ab";
         HttpUtil.sendRequest(weatherUrl, new Callback() {
@@ -193,6 +244,9 @@ final String responsetext=response.body().string();
         carwashText.setText(carwash);
         sportText.setText(sport);
         weatherlayout.setVisibility(View.VISIBLE);
+
+        Intent intent=new Intent(weather_Activity.this,autouodateService.class);
+        startService(intent);
     }
     private void loadBingPics()
     {
