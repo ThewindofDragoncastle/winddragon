@@ -1,17 +1,22 @@
 package com.example.winddragon;
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.os.Build;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.winddragon.gson.Forecast;
 import com.example.winddragon.gson.Weather;
 import com.example.winddragon.util.HttpUtil;
@@ -45,10 +50,22 @@ private ScrollView weatherlayout;
 
     private TextView sportText;
 
+    private ImageView picbackground;
+
    private LinearLayout forecastLayout;
+
+    private SwipeRefreshLayout swipeRefreshLayout;
+
+    private String weatherId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(Build.VERSION.SDK_INT>=21)
+        {
+            View decorView=getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+        }
         setContentView(R.layout.activity_weather_);
         //初始化各项目
         weatherlayout=(ScrollView)findViewById(R.id.weather_layout);
@@ -63,11 +80,22 @@ private ScrollView weatherlayout;
         carwashText=(TextView)findViewById(R.id.car_wash_text);
         sportText=(TextView)findViewById(R.id.sport_text);
 
+        picbackground=(ImageView)findViewById(R.id.bing_img);
+        swipeRefreshLayout=(SwipeRefreshLayout)findViewById(R.id.swiperefresh);
+        swipeRefreshLayout.setColorSchemeResources(R.color.mygreen);
+
         SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(this);
         String localdata=sharedPreferences.getString("weather",null);
+        String pic=sharedPreferences.getString("bingpic",null);
+        if(pic!=null)
+        {
+            Glide.with(weather_Activity.this).load(pic).into(picbackground);
+        }
+        else
+        loadBingPics();
         if(localdata==null)
         {//没有缓存
-            String weatherId=getIntent().getStringExtra("weather_id");
+            weatherId=getIntent().getStringExtra("weather_id");
             MyLog.i("weather_activity:",weatherId);
             weatherlayout.setVisibility(View.INVISIBLE);
             requestweather(weatherId);
@@ -75,9 +103,16 @@ private ScrollView weatherlayout;
         else
         {
             Weather weather=Utility.handleweatherResponse(localdata);
+            weatherId=weather.basic.weatherId;
             showWeather(weather);
         }
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestweather(weatherId);
 
+            }
+        });
     }
     private void requestweather(String weatherId)
     {
@@ -93,6 +128,7 @@ private ScrollView weatherlayout;
                         Toast.makeText(weather_Activity.this,"天气获取失败！",Toast.LENGTH_SHORT).show();
                     }
                 });
+                swipeRefreshLayout.setRefreshing(false);
             }
 
             @Override
@@ -108,15 +144,18 @@ final String responsetext=response.body().string();
                             editor.putString("weather",responsetext);
                             editor.apply();
                             showWeather(weather);
+                            Toast.makeText(weather_Activity.this,"数据加载成功！",Toast.LENGTH_SHORT).show();
                         }
                         else
                         {
                             Toast.makeText(weather_Activity.this,"天气获取失败！",Toast.LENGTH_SHORT).show();
                         }
+                        swipeRefreshLayout.setRefreshing(false);
                     }
                 });
             }
         });
+        loadBingPics();
     }
     private void showWeather(Weather weather)
     {
@@ -154,5 +193,30 @@ final String responsetext=response.body().string();
         carwashText.setText(carwash);
         sportText.setText(sport);
         weatherlayout.setVisibility(View.VISIBLE);
+    }
+    private void loadBingPics()
+    {
+        String requestBingPic="http://guolin.tech/api/bing_pic";
+//        String requestBingPic="http://192.168.0.103/picture/无极剑圣.jpg";
+        HttpUtil.sendRequest(requestBingPic, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Toast.makeText(getBaseContext(),"Sorry, can^t get data from Server!",Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+final String bingpic=response.body().string();
+                SharedPreferences.Editor editor=PreferenceManager.getDefaultSharedPreferences(weather_Activity.this).edit();
+                editor.putString("bingpic",bingpic);
+                editor.apply();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Glide.with(weather_Activity.this).load(bingpic).into(picbackground);
+                    }
+                });
+            }
+        });
     }
 }
